@@ -1,0 +1,20 @@
+{{ define "healthcheck" }}
+
+{{- /*gotype: gocloud.dev/server/health/sqlhealth.Checker*/ -}}
+
+{{ $pkg := base $.Config.Package }}
+{{- with extend $ "Package" $pkg }}
+        {{ template "header" . }}
+{{- end }}
+
+{{ template "import" $ }}
+
+func (c *Client) HealthCheck() *sqlhealth.Checker {
+	drv := c.driver
+	if d, ok := drv.(*dialect.DebugDriver); ok {
+		drv = d.Driver
+	}
+
+	return sqlhealth.New(drv.(*sql.Driver).DB())
+}
+{{ end }}

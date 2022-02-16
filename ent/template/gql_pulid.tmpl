@@ -1,0 +1,34 @@
+{{ define "gql_pulid" }}
+
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+// prefixMap maps PULID prefixes to table names.
+var prefixMap = map[string]string{
+	{{- range $node := $.Nodes }}
+		{{- if $annotation := $node.Annotations.PULID }}
+			"{{ $annotation.Prefix }}": {{ $node.Package }}.Table,
+		{{- end }}
+	{{- end }}
+}
+
+// WithPrefixedULID sets the node Type resolver function (i.e. the table to query).
+// If was not provided, the table will be derived from the universal-id
+// configuration as described in: https://entgo.io/docs/migrate/#universal-ids.
+func WithPrefixedULID() NodeOption {
+	return func(o *nodeOptions) {
+		o.nodeType = func (ctx context.Context, id pulid.ID) (string, error) {
+			prefix, err := pulid.ParsePrefix(id)
+			if err != nil {
+				return "", err
+			}
+
+			if typ := prefixMap[prefix]; typ != "" {
+				return typ, nil
+			}
+			return "", fmt.Errorf("pulid: could not map prefix '%s' to a type", prefix)
+		}
+	}
+}
+
+{{ end }}

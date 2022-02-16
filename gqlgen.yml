@@ -1,0 +1,55 @@
+# schema tells gqlgen where the GraphQL schema is located.
+schema:
+  - ./graphql/schema/*.gql
+
+# Where should the generated server code go?
+exec:
+  filename: ./graphql/generated/generated.go
+  package: generated
+
+# Uncomment to enable federation
+federation:
+  filename: ./graphql/generated/federation.go
+  package: generated
+
+# Where should any generated models go?
+model:
+  filename: ./graphql/model/models_gen.go
+  package: model
+
+# custom directives which are not exposed during introspection. These directives are
+# used for code generation only
+directives:
+  pulid:
+    skip_runtime: true
+
+# Where should the resolver implementations go?
+resolver:
+  layout: follow-schema
+  dir: ./graphql/resolver
+  package: resolver
+  filename_template: "{name}.resolvers.go"
+
+# gqlgen will search for any type names in the schema in these go packages
+# if they match it will use them, otherwise it will generate them.
+
+# autobind tells gqlgen to search for any type names in the GraphQL schema in the
+# provided Go package. If they match it will use them, otherwise it will generate new ones.
+autobind:
+  - giautm.dev/awesome/ent
+
+# This section declares type mapping between the GraphQL and Go type systems.
+models:
+  # Defines the ID field as Go 'int'.
+  ID:
+    model:
+      - giautm.dev/awesome/ent/schema/pulid.ID
+  Node:
+    model:
+      - giautm.dev/awesome/ent.Noder
+  Status:
+    model:
+      - giautm.dev/awesome/ent/todo.Status
+  AuthRole:
+    model:
+      - giautm.dev/awesome/graphql/directive.AuthRole
